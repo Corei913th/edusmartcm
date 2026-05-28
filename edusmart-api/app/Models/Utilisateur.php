@@ -2,35 +2,40 @@
 
 namespace App\Models;
 
+use App\Constants\TokenConstants;
 use App\Enums\Role;
 use App\Traits\HasEncryptedPii;
 use App\Traits\HasUpdatedAtTrigger;
 use App\Traits\UsesUuidAsPrimaryKey;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
- * @property string $id
- * @property Role   $role_code
- * @property int    $etablissement_id
- * @property string $nom
- * @property string $prenom
- * @property string $telephone
- * @property string $email
- * @property string $password_hash
- * @property bool   $est_actif
- * @property string $derniere_connexion
- * @property string $created_at
- * @property string $updated_at
+ * @property string      $id
+ * @property Role        $role_code
+ * @property int         $etablissement_id
+ * @property string      $nom
+ * @property string      $prenom
+ * @property string      $telephone
+ * @property string      $email
+ * @property string      $password_hash
+ * @property bool        $est_actif
+ * @property Carbon|null $derniere_connexion
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class Utilisateur extends Authenticatable {
+    use HasApiTokens;
     use HasEncryptedPii;
     use HasFactory;
     use HasUpdatedAtTrigger;
     use UsesUuidAsPrimaryKey;
+    public const ROLE_DEFAULT = 'ENSEIGNANT';
 
     protected $table = 'utilisateurs';
 
@@ -55,6 +60,18 @@ class Utilisateur extends Authenticatable {
 
     public function getAuthPassword(): string {
         return $this->password_hash;
+    }
+
+    public function issueToken(): string {
+        return $this->createToken(
+            TokenConstants::DEFAULT_ACCESS_TOKEN_NAME,
+            [TokenConstants::ABILITY_ALL],
+            now()->addMinutes(TokenConstants::DEFAULT_ACCESS_TOKEN_EXPIRY_MINUTES),
+        )->plainTextToken;
+    }
+
+    public function markAsConnected(): void {
+        $this->update(['derniere_connexion' => now()]);
     }
 
     public function etablissement(): BelongsTo {
