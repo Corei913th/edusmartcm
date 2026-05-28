@@ -6,14 +6,13 @@ on:
   pull_request:
     branches: ["main", "develop"]
 
-defaults:
-  run:
-    working-directory: edusmart-api
-
 jobs:
   security:
     name: Security Audit & SAST
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: edusmart-api
     steps:
       - uses: actions/checkout@v4
       - name: Setup PHP
@@ -56,6 +55,9 @@ jobs:
   lint:
     name: Lint & Style
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: edusmart-api
     steps:
       - uses: actions/checkout@v4
       - name: Setup PHP
@@ -72,6 +74,9 @@ jobs:
     name: Feature & Unit Tests
     needs: [security, lint, iac]
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: edusmart-api
     services:
       postgres:
         image: postgres:15-alpine
