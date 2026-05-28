@@ -9,13 +9,11 @@ use Tests\TestCase;
 /**
  * Tests d'intégration pour l'API des notes
  */
-class NoteApiTest extends TestCase
-{
+class NoteApiTest extends TestCase {
     /**
      * Test de validation lors de la création d'une note
      */
-    public function testNoteCreationValidation(): void
-    {
+    public function testNoteCreationValidation(): void {
         $invalidData = [
             'note' => 25, // Note invalide (> 20)
             'coefficient' => 0, // Coefficient invalide (< 1)
@@ -29,8 +27,7 @@ class NoteApiTest extends TestCase
     /**
      * Test d'accès non autorisé sans authentification
      */
-    public function testRequiresAuthentication(): void
-    {
+    public function testRequiresAuthentication(): void {
         $response = $this->getJson('/api/v1/notes');
 
         $response->assertStatus(401);
@@ -39,8 +36,7 @@ class NoteApiTest extends TestCase
     /**
      * Test que les routes existent
      */
-    public function testRoutesExist(): void
-    {
+    public function testRoutesExist(): void {
         // Test que les routes retournent des réponses valides (pas 404)
         $routes = [
             'GET' => '/api/v1/notes',
@@ -55,7 +51,7 @@ class NoteApiTest extends TestCase
             };
 
             // Ne doit pas être 404 (route non trouvée)
-            $this->assertNotEquals(404, $response->getStatusCode());
+            $this->assertNotSame(404, $response->getStatusCode());
         }
     }
 }
