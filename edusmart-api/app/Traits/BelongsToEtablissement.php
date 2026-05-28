@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Etablissement;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -10,25 +11,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property-read Etablissement|null $etablissement
  */
-trait BelongsToEtablissement
-{
+trait BelongsToEtablissement {
     /**
      * Get the etablissement that owns this model.
      */
-    public function etablissement(): BelongsTo
-    {
+    public function etablissement(): BelongsTo {
         return $this->belongsTo(Etablissement::class);
     }
 
     /**
      * Scope query to a specific etablissement.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  string  $etablissementId
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param Builder $query
+     * @param string  $etablissementId
+     *
+     * @return Builder
      */
-    public function scopeByEtablissement($query, $etablissementId)
-    {
+    public function scopeByEtablissement($query, $etablissementId) {
         return $query->where('etablissement_id', $etablissementId);
     }
 }

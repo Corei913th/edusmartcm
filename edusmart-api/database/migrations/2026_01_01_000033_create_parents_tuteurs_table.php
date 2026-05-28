@@ -4,10 +4,9 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('parents_tuteurs', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('parents_tuteurs', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('utilisateur_id')->unique()->constrained('utilisateurs');
             $table->binary('nom');
@@ -19,8 +18,7 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('parents_tuteurs');
     }
 };

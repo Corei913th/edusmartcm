@@ -16,8 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $created_at
  * @property string $updated_at
  */
-class PushSubscription extends Model
-{
+class PushSubscription extends Model {
     use UsesUuidAsPrimaryKey;
 
     protected $table = 'push_subscriptions';
@@ -33,8 +32,7 @@ class PushSubscription extends Model
         'user_agent',
     ];
 
-    public function utilisateur(): BelongsTo
-    {
+    public function utilisateur(): BelongsTo {
         return $this->belongsTo(Utilisateur::class, 'utilisateur_id');
     }
 }

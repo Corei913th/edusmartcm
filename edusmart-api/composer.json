@@ -11,10 +11,12 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.0",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
         "laravel/sail": "^1.41",
@@ -38,6 +40,25 @@
         }
     },
     "scripts": {
+        "lint": [
+            "@php vendor/bin/pint --ansi"
+        ],
+        "lint:test": [
+            "@php vendor/bin/pint --test --ansi"
+        ],
+        "lint:diff": [
+            "@php vendor/bin/pint --diff --ansi"
+        ],
+        "phpstan": [
+            "@php vendor/bin/phpstan analyse --configuration=phpstan.neon --memory-limit=512M"
+        ],
+        "phpstan:baseline": [
+            "@php vendor/bin/phpstan analyse --configuration=phpstan.neon --generate-baseline --memory-limit=512M"
+        ],
+        "check": [
+            "@lint:test",
+            "@phpstan"
+        ],
         "setup": [
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",

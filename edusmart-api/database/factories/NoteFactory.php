@@ -10,12 +10,10 @@ use App\Models\Periode;
 use App\Models\Utilisateur;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class NoteFactory extends Factory
-{
+class NoteFactory extends Factory {
     protected $model = Note::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'inscription_id' => Inscription::factory(),
             'affectation_id' => AffectationEnseignement::factory(),

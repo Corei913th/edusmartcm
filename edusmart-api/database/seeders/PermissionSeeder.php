@@ -5,10 +5,12 @@ namespace Database\Seeders;
 use App\Models\Permission;
 use Illuminate\Database\Seeder;
 
-class PermissionSeeder extends Seeder
-{
-    public function run(): void
-    {
+class PermissionSeeder extends Seeder {
+    public function run(): void {
+        if (Permission::count() > 0) {
+            return;
+        }
+
         $permissions = [
             ['code' => 'marks:read:own',       'description' => 'Lire ses propres notes'],
             ['code' => 'marks:read:class',     'description' => 'Lire les notes de sa classe'],

@@ -13,12 +13,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $ip_address
  * @property string $user_agent
  * @property string $expire_at
- * @property bool $revoque
+ * @property bool   $revoque
  * @property string $created_at
  * @property string $updated_at
  */
-class Session extends Model
-{
+class Session extends Model {
     use UsesUuidAsPrimaryKey;
 
     protected $table = 'sessions';
@@ -40,8 +39,7 @@ class Session extends Model
         'expire_at' => 'datetime',
     ];
 
-    public function utilisateur(): BelongsTo
-    {
+    public function utilisateur(): BelongsTo {
         return $this->belongsTo(Utilisateur::class, 'utilisateur_id');
     }
 }

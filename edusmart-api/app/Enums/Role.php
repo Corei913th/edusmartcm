@@ -2,8 +2,7 @@
 
 namespace App\Enums;
 
-enum Role: string
-{
+enum Role: string {
     case SUPER_ADMIN = 'SUPER_ADMIN';
     case ADMIN_ETABLISSEMENT = 'ADMIN_ETABLISSEMENT';
     case DIRECTION = 'DIRECTION';
@@ -11,8 +10,7 @@ enum Role: string
     case PARENT = 'PARENT';
     case ELEVE = 'ELEVE';
 
-    public function libelle(): string
-    {
+    public function libelle(): string {
         return match ($this) {
             self::SUPER_ADMIN => 'Super Administrateur',
             self::ADMIN_ETABLISSEMENT => 'Administrateur Établissement',

@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('otp_codes', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('otp_codes', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('utilisateur_id')->constrained('utilisateurs')->onDelete('cascade');
             $table->string('code_hash', 255);
@@ -22,8 +21,7 @@ return new class extends Migration {
         DB::statement("ALTER TABLE otp_codes ADD CONSTRAINT otp_codes_type_check CHECK (type IN ('SMS','EMAIL'))");
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('otp_codes');
     }
 };

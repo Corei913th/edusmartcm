@@ -5,8 +5,7 @@ namespace App\Enums;
 /**
  * Values from SQL CHECK constraint on appreciations_comportementales.niveau
  */
-enum NiveauAppreciation: string
-{
+enum NiveauAppreciation: string {
     case EXCELLENT = 'EXCELLENT';
     case BIEN = 'BIEN';
     case MOYEN = 'MOYEN';

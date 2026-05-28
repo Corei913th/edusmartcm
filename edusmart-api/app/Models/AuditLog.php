@@ -6,19 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property int $id
+ * @property int    $id
  * @property string $utilisateur_id
  * @property string $action
  * @property string $ressource_type
  * @property string $ressource_id
  * @property string $ip_address
  * @property string $user_agent
- * @property array $metadata
+ * @property array  $metadata
  * @property string $created_at
  * @property string $updated_at
  */
-class AuditLog extends Model
-{
+class AuditLog extends Model {
     protected $table = 'audit_logs';
 
     public const CREATED_AT = 'created_at';
@@ -38,8 +37,7 @@ class AuditLog extends Model
         'metadata' => 'array',
     ];
 
-    public function utilisateur(): BelongsTo
-    {
+    public function utilisateur(): BelongsTo {
         return $this->belongsTo(Utilisateur::class, 'utilisateur_id');
     }
 }

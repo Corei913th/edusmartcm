@@ -10,10 +10,8 @@ use App\Casts\EncryptedBytea;
  * Define an `$encrypted` array property on the model listing columns
  * that should be transparently encrypted via EncryptedBytea cast.
  */
-trait HasEncryptedPii
-{
-    public function initializeHasEncryptedPii(): void
-    {
+trait HasEncryptedPii {
+    public function initializeHasEncryptedPii(): void {
         $encrypted = $this->getEncryptedColumns();
         $casts = [];
         foreach ($encrypted as $column) {
@@ -22,8 +20,8 @@ trait HasEncryptedPii
         $this->mergeCasts($casts);
     }
 
-    protected function getEncryptedColumns(): array
-    {
-        return property_exists($this, 'encrypted') ? $this->encrypted : [];
+    /** @return array<int, string> */
+    protected function getEncryptedColumns(): array {
+        return $this->encrypted;
     }
 }

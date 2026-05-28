@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('radiations', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('radiations', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('inscription_id')->constrained('inscriptions');
             $table->date('date_radiation');
@@ -21,8 +20,7 @@ return new class extends Migration {
         DB::statement("ALTER TABLE radiations ADD CONSTRAINT radiations_motif_check CHECK (motif IS NULL OR motif IN ('EXCLUSION','ABANDON','DECES','AUTRE'))");
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('radiations');
     }
 };

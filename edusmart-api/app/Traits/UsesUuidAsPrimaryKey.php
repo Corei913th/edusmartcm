@@ -9,24 +9,20 @@ use Illuminate\Support\Str;
  *
  * Disables auto-incrementing integer primary keys in favor of UUID.
  */
-trait UsesUuidAsPrimaryKey
-{
-    protected static function bootUsesUuidAsPrimaryKey(): void
-    {
-        static::creating(function ($model) {
+trait UsesUuidAsPrimaryKey {
+    protected static function bootUsesUuidAsPrimaryKey(): void {
+        static::creating(function ($model): void {
             if (empty($model->{$model->getKeyName()})) {
                 $model->{$model->getKeyName()} = (string) Str::uuid();
             }
         });
     }
 
-    public function getIncrementing(): bool
-    {
+    public function getIncrementing(): bool {
         return false;
     }
 
-    public function getKeyType(): string
-    {
+    public function getKeyType(): string {
         return 'string';
     }
 }

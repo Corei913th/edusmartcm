@@ -13,14 +13,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $type_evenement
  * @property string $titre
  * @property string $corps
- * @property array $donnees_meta
- * @property bool $lu
+ * @property array  $donnees_meta
+ * @property bool   $lu
  * @property string $lu_at
  * @property string $created_at
  * @property string $updated_at
  */
-class Notification extends Model
-{
+class Notification extends Model {
     use UsesUuidAsPrimaryKey;
 
     protected $table = 'notifications';
@@ -44,13 +43,11 @@ class Notification extends Model
         'lu_at' => 'datetime',
     ];
 
-    public function destinataire(): BelongsTo
-    {
+    public function destinataire(): BelongsTo {
         return $this->belongsTo(Utilisateur::class, 'destinataire_id');
     }
 
-    public function envois(): HasMany
-    {
+    public function envois(): HasMany {
         return $this->hasMany(EnvoiNotification::class, 'notification_id');
     }
 }

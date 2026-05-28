@@ -2,34 +2,34 @@
 
 namespace App\Helpers;
 
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
  * Helper pour les opérations de base de données
  */
-class DatabaseHelper
-{
+class DatabaseHelper {
     /**
      * Exécuter une opération dans une transaction
      *
-     * @param  callable  $callback  Fonction à exécuter
-     * @param  string|null  $context  Contexte pour le logging en cas d'erreur
-     * @return mixed
+     * @param callable    $callback Fonction à exécuter
+     * @param string|null $context  Contexte pour le logging en cas d'erreur
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function runTransaction(callable $callback, ?string $context = null)
-    {
+    public static function runTransaction(callable $callback, ?string $context = null) {
         try {
             return DB::transaction($callback);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if ($context) {
                 Log::error("Transaction failed: {$context}", [
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
             }
+
             throw $e;
         }
     }
@@ -37,12 +37,11 @@ class DatabaseHelper
     /**
      * Logger une erreur de service avec contexte
      *
-     * @param  string  $message  Message d'erreur
-     * @param  \Exception  $exception  Exception levée
-     * @param  array  $context  Contexte additionnel
+     * @param string    $message   Message d'erreur
+     * @param Exception $exception Exception levée
+     * @param array     $context   Contexte additionnel
      */
-    public static function logServiceError(string $message, \Exception $exception, array $context = []): void
-    {
+    public static function logServiceError(string $message, Exception $exception, array $context = []): void {
         Log::error($message, array_merge([
             'error' => $exception->getMessage(),
             'file' => $exception->getFile(),
@@ -53,13 +52,12 @@ class DatabaseHelper
     /**
      * Vérifier si un code existe
      *
-     * @param  string  $modelClass  Classe du modèle
-     * @param  string  $column  Nom de la colonne
-     * @param  mixed  $value  Valeur à vérifier
-     * @param  string|null  $excludeId  ID à exclure (pour update)
+     * @param string      $modelClass Classe du modèle
+     * @param string      $column     Nom de la colonne
+     * @param mixed       $value      Valeur à vérifier
+     * @param string|null $excludeId  ID à exclure (pour update)
      */
-    public static function codeExists(string $modelClass, string $column, $value, ?string $excludeId = null): bool
-    {
+    public static function codeExists(string $modelClass, string $column, $value, ?string $excludeId = null): bool {
         $query = $modelClass::where($column, $value);
 
         if ($excludeId) {
@@ -72,29 +70,26 @@ class DatabaseHelper
     /**
      * Vérifier si une entité a des dépendances
      *
-     * @param  mixed  $model  Instance du modèle
-     * @param  string  $relation  Nom de la relation
+     * @param mixed  $model    Instance du modèle
+     * @param string $relation Nom de la relation
      */
-    public static function hasDependencies($model, string $relation): bool
-    {
+    public static function hasDependencies($model, string $relation): bool {
         return $model->{$relation}()->exists();
     }
 
     /**
      * Trouver par ID ou lever une exception personnalisée
      *
-     * @param  string  $modelClass  Classe du modèle
-     * @param  string  $id  ID à rechercher
-     * @param  string  $exceptionClass  Classe d'exception à lever
-     * @return mixed
+     * @param string $modelClass     Classe du modèle
+     * @param string $id             ID à rechercher
+     * @param string $exceptionClass Classe d'exception à lever
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function findOrFail(string $modelClass, string $id, string $exceptionClass)
-    {
+    public static function findOrFail(string $modelClass, string $id, string $exceptionClass) {
         try {
             return $modelClass::findOrFail($id);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             throw $exceptionClass::notFound($id);
         }
     }

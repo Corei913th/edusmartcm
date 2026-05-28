@@ -8,17 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property string $id
- * @property string $parent_id
+ * @property string        $id
+ * @property string        $parent_id
  * @property TypeEvenement $type_evenement
- * @property bool $canal_sms
- * @property bool $canal_email
- * @property bool $canal_push
- * @property string $created_at
- * @property string $updated_at
+ * @property bool          $canal_sms
+ * @property bool          $canal_email
+ * @property bool          $canal_push
+ * @property string        $created_at
+ * @property string        $updated_at
  */
-class PreferenceNotification extends Model
-{
+class PreferenceNotification extends Model {
     use UsesUuidAsPrimaryKey;
 
     protected $table = 'preferences_notifications';
@@ -40,8 +39,7 @@ class PreferenceNotification extends Model
         'canal_push' => 'boolean',
     ];
 
-    public function parent(): BelongsTo
-    {
+    public function parent(): BelongsTo {
         return $this->belongsTo(ParentTuteur::class, 'parent_id');
     }
 }

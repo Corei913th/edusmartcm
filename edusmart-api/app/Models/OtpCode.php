@@ -8,18 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property string $id
- * @property string $utilisateur_id
- * @property string $code_hash
+ * @property string  $id
+ * @property string  $utilisateur_id
+ * @property string  $code_hash
  * @property OtpType $type
- * @property int $tentatives
- * @property string $expire_at
- * @property bool $utilise
- * @property string $created_at
- * @property string $updated_at
+ * @property int     $tentatives
+ * @property string  $expire_at
+ * @property bool    $utilise
+ * @property string  $created_at
+ * @property string  $updated_at
  */
-class OtpCode extends Model
-{
+class OtpCode extends Model {
     use UsesUuidAsPrimaryKey;
 
     protected $table = 'otp_codes';
@@ -43,8 +42,7 @@ class OtpCode extends Model
         'expire_at' => 'datetime',
     ];
 
-    public function utilisateur(): BelongsTo
-    {
+    public function utilisateur(): BelongsTo {
         return $this->belongsTo(Utilisateur::class, 'utilisateur_id');
     }
 }

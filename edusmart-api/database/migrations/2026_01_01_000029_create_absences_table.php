@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('absences', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('absences', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('inscription_id')->constrained('inscriptions');
             $table->foreignUuid('affectation_id')->nullable()->constrained('affectations_enseignement');
@@ -32,8 +31,7 @@ return new class extends Migration {
         DB::statement('CREATE INDEX idx_absences_sync ON absences(saisie_hors_ligne, sync_at) WHERE saisie_hors_ligne = TRUE');
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('absences');
     }
 };

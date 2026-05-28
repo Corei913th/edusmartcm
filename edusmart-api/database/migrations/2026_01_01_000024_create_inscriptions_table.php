@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('inscriptions', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('inscriptions', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('eleve_id')->constrained('eleves');
             $table->foreignUuid('classe_id')->constrained('classes');
@@ -25,8 +24,7 @@ return new class extends Migration {
         DB::statement("ALTER TABLE inscriptions ADD CONSTRAINT inscriptions_statut_check CHECK (statut IN ('ACTIF','TRANSFERE','RADIE','DIPLOME'))");
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('inscriptions');
     }
 };

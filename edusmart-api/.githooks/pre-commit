@@ -1,0 +1,60 @@
+#!/bin/sh
+# EduSmart CM — Pre-commit hook
+# Runs Pint (code style) and PHPStan (static analysis) before each commit.
+
+set -e
+
+echo "┌─ Pre-commit checks ──────────────────────────────┐"
+
+# Get the project root (where this hook lives)
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$PROJECT_DIR"
+
+# Check for unstaged changes — stash them if needed
+STASHED=false
+if ! git diff --quiet --ignore-submodules HEAD; then
+    git stash --quiet --keep-index --include-untracked
+    STASHED=true
+fi
+
+echo "│"
+echo "│ 1/2 ─ Running Pint (code style)..."
+
+# Run Pint in test mode (dry-run)
+if ! php vendor/bin/pint --test --ansi 2>&1; then
+    echo "│"
+    echo "│ ⚠  Pint found style issues. Run 'composer lint' to fix them."
+    echo "│"
+    if [ "$STASHED" = true ]; then
+        git stash pop --quiet
+    fi
+    exit 1
+fi
+
+echo "│      ✓ Pint passed"
+echo "│"
+echo "│ 2/2 ─ Running PHPStan (static analysis)..."
+
+vendor/bin/phpstan analyse --configuration=phpstan.neon --no-progress --ansi --memory-limit=512M 2>&1
+PHPSTAN_EXIT=$?
+
+if [ "$PHPSTAN_EXIT" -ne 0 ]; then
+    echo "│"
+    echo "│ ⚠  PHPStan found errors. Fix them before committing."
+    echo "│"
+    if [ "$STASHED" = true ]; then
+        git stash pop --quiet
+    fi
+    exit 1
+fi
+
+echo "│      ✓ PHPStan passed"
+echo "│"
+
+# Restore stashed changes
+if [ "$STASHED" = true ]; then
+    git stash pop --quiet
+fi
+
+echo "└──────────────────────────────────────────────────┘"
+echo "✓ All checks passed. Proceeding with commit."

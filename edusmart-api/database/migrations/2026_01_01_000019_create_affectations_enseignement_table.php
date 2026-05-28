@@ -4,10 +4,9 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('affectations_enseignement', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('affectations_enseignement', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('enseignant_id')->constrained('enseignants');
             $table->foreignUuid('classe_id')->constrained('classes');
@@ -18,8 +17,7 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('affectations_enseignement');
     }
 };

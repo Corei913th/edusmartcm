@@ -5,10 +5,12 @@ namespace Database\Seeders;
 use App\Models\Region;
 use Illuminate\Database\Seeder;
 
-class RegionSeeder extends Seeder
-{
-    public function run(): void
-    {
+class RegionSeeder extends Seeder {
+    public function run(): void {
+        if (Region::count() > 0) {
+            return;
+        }
+
         $regions = [
             ['code' => 'CE', 'nom' => 'Centre'],
             ['code' => 'LT', 'nom' => 'Littoral'],

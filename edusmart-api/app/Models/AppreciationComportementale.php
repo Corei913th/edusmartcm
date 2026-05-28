@@ -8,19 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property string $id
- * @property string $inscription_id
- * @property string $periode_id
+ * @property string             $id
+ * @property string             $inscription_id
+ * @property string             $periode_id
  * @property NiveauAppreciation $discipline
  * @property NiveauAppreciation $ponctualite
  * @property NiveauAppreciation $travail
- * @property string $commentaire
- * @property string $created_by
- * @property string $created_at
- * @property string $updated_at
+ * @property string             $commentaire
+ * @property string             $created_by
+ * @property string             $created_at
+ * @property string             $updated_at
  */
-class AppreciationComportementale extends Model
-{
+class AppreciationComportementale extends Model {
     use UsesUuidAsPrimaryKey;
 
     protected $table = 'appreciations_comportementales';
@@ -44,18 +43,15 @@ class AppreciationComportementale extends Model
         'travail' => NiveauAppreciation::class,
     ];
 
-    public function inscription(): BelongsTo
-    {
+    public function inscription(): BelongsTo {
         return $this->belongsTo(Inscription::class);
     }
 
-    public function periode(): BelongsTo
-    {
+    public function periode(): BelongsTo {
         return $this->belongsTo(Periode::class);
     }
 
-    public function createur(): BelongsTo
-    {
+    public function createur(): BelongsTo {
         return $this->belongsTo(Utilisateur::class, 'created_by');
     }
 }

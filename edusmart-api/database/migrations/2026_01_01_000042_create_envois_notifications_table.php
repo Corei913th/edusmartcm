@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('envois_notifications', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('envois_notifications', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('notification_id')->constrained('notifications')->onDelete('cascade');
             $table->string('canal', 20);
@@ -25,8 +24,7 @@ return new class extends Migration {
         DB::statement("CREATE INDEX idx_envois_statut ON envois_notifications(statut, created_at) WHERE statut IN ('EN_ATTENTE', 'ECHEC')");
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('envois_notifications');
     }
 };

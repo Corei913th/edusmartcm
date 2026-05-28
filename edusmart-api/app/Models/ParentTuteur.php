@@ -19,8 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $created_at
  * @property string $updated_at
  */
-class ParentTuteur extends Model
-{
+class ParentTuteur extends Model {
     use HasEncryptedPii;
     use UsesUuidAsPrimaryKey;
 
@@ -44,18 +43,15 @@ class ParentTuteur extends Model
         'telephone',
     ];
 
-    public function utilisateur(): BelongsTo
-    {
+    public function utilisateur(): BelongsTo {
         return $this->belongsTo(Utilisateur::class, 'utilisateur_id');
     }
 
-    public function rattachements(): HasMany
-    {
+    public function rattachements(): HasMany {
         return $this->hasMany(RattachementParentEleve::class, 'parent_id');
     }
 
-    public function preferencesNotifications(): HasMany
-    {
+    public function preferencesNotifications(): HasMany {
         return $this->hasMany(PreferenceNotification::class, 'parent_id');
     }
 }

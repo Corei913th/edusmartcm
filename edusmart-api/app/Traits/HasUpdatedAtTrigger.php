@@ -7,15 +7,12 @@ namespace App\Traits;
  *
  * Used when a PostgreSQL trigger manages updated_at column.
  */
-trait HasUpdatedAtTrigger
-{
-    public function setUpdatedAt($value): ?static
-    {
+trait HasUpdatedAtTrigger {
+    public function setUpdatedAt($value): ?static {
         return $this;
     }
 
-    public function getUpdatedAtColumn(): ?string
-    {
+    public function getUpdatedAtColumn(): ?string {
         return 'updated_at';
     }
 }

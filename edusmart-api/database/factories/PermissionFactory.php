@@ -5,12 +5,10 @@ namespace Database\Factories;
 use App\Models\Permission;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class PermissionFactory extends Factory
-{
+class PermissionFactory extends Factory {
     protected $model = Permission::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'code' => $this->faker->unique()->regexify('[a-z]+:[a-z]+:[a-z]+'),
             'description' => $this->faker->sentence(),

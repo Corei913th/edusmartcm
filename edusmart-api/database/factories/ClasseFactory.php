@@ -8,12 +8,10 @@ use App\Models\Etablissement;
 use App\Models\Niveau;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ClasseFactory extends Factory
-{
+class ClasseFactory extends Factory {
     protected $model = Classe::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'etablissement_id' => Etablissement::factory(),
             'annee_id' => AnneeScolaire::factory(),

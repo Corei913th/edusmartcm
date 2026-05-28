@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('etablissements', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('etablissements', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('code_uai', 20)->unique();
             $table->string('nom', 200);
@@ -29,8 +28,7 @@ return new class extends Migration {
         DB::statement("ALTER TABLE etablissements ADD CONSTRAINT etablissements_connectivite_check CHECK (connectivite IS NULL OR connectivite IN ('3G','4G','FIBRE','ADSL','NONE'))");
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('etablissements');
     }
 };

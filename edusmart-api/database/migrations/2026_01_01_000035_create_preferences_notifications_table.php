@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('preferences_notifications', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('preferences_notifications', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('parent_id')->constrained('parents_tuteurs');
             $table->string('type_evenement', 50);
@@ -21,8 +20,7 @@ return new class extends Migration {
         DB::statement("ALTER TABLE preferences_notifications ADD CONSTRAINT preferences_type_evenement_check CHECK (type_evenement IN ('NOUVEAU_BULLETIN','ABSENCE_INJUSTIFIEE','NOTE_DISPONIBLE','REUNION_PARENTS','MESSAGE_RECU','ALERTE_SECURITE'))");
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('preferences_notifications');
     }
 };

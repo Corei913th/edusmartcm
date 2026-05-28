@@ -8,12 +8,10 @@ use App\Models\Departement;
 use App\Models\Etablissement;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class EtablissementFactory extends Factory
-{
+class EtablissementFactory extends Factory {
     protected $model = Etablissement::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'code_uai' => $this->faker->unique()->bothify('???-####'),
             'nom' => $this->faker->company(),

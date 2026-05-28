@@ -5,25 +5,24 @@ namespace App\Models;
 use App\Traits\UsesUuidAsPrimaryKey;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
- * @property string $id
- * @property string $inscription_id
- * @property string $etablissement_origine_id
- * @property string $etablissement_destination_id
- * @property string $date_transfert
+ * @property string      $id
+ * @property string      $inscription_id
+ * @property string      $etablissement_origine_id
+ * @property string      $etablissement_destination_id
+ * @property string      $date_transfert
  * @property string|null $motif
  * @property string|null $created_by
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- *
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Inscription $inscription
  * @property-read Etablissement $etablissementOrigine
  * @property-read Etablissement $etablissementDestination
  * @property-read Utilisateur|null $createur
  */
-class Transfert extends Model
-{
+class Transfert extends Model {
     use UsesUuidAsPrimaryKey;
 
     protected $table = 'transferts';
@@ -36,30 +35,25 @@ class Transfert extends Model
         'date_transfert', 'motif', 'created_by',
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'date_transfert' => 'date:Y-m-d',
         ];
     }
 
-    public function inscription(): BelongsTo
-    {
+    public function inscription(): BelongsTo {
         return $this->belongsTo(Inscription::class);
     }
 
-    public function etablissementOrigine(): BelongsTo
-    {
+    public function etablissementOrigine(): BelongsTo {
         return $this->belongsTo(Etablissement::class, 'etablissement_origine_id');
     }
 
-    public function etablissementDestination(): BelongsTo
-    {
+    public function etablissementDestination(): BelongsTo {
         return $this->belongsTo(Etablissement::class, 'etablissement_destination_id');
     }
 
-    public function createur(): BelongsTo
-    {
+    public function createur(): BelongsTo {
         return $this->belongsTo(Utilisateur::class, 'created_by');
     }
 }

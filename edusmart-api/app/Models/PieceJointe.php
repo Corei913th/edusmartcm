@@ -11,13 +11,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $message_id
  * @property string $nom_fichier
  * @property string $type_mime
- * @property int $taille_octets
+ * @property int    $taille_octets
  * @property string $chemin_stockage
  * @property string $created_at
  * @property string $updated_at
  */
-class PieceJointe extends Model
-{
+class PieceJointe extends Model {
     use UsesUuidAsPrimaryKey;
 
     protected $table = 'pieces_jointes';
@@ -37,8 +36,7 @@ class PieceJointe extends Model
         'taille_octets' => 'integer',
     ];
 
-    public function message(): BelongsTo
-    {
+    public function message(): BelongsTo {
         return $this->belongsTo(Message::class, 'message_id');
     }
 }

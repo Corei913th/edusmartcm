@@ -7,12 +7,10 @@ use App\Models\Etablissement;
 use App\Models\Utilisateur;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class EnseignantFactory extends Factory
-{
+class EnseignantFactory extends Factory {
     protected $model = Enseignant::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'utilisateur_id' => Utilisateur::factory(),
             'etablissement_id' => Etablissement::factory(),

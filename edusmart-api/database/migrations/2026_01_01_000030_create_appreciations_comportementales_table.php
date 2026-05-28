@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('appreciations_comportementales', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('appreciations_comportementales', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('inscription_id')->constrained('inscriptions');
             $table->foreignId('periode_id')->constrained('periodes');
@@ -26,8 +25,7 @@ return new class extends Migration {
         DB::statement("ALTER TABLE appreciations_comportementales ADD CONSTRAINT appreciations_travail_check CHECK (travail IS NULL OR travail IN ('EXCELLENT','BIEN','MOYEN','FAIBLE'))");
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('appreciations_comportementales');
     }
 };

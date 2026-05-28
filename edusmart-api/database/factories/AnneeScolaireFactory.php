@@ -5,12 +5,10 @@ namespace Database\Factories;
 use App\Models\AnneeScolaire;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class AnneeScolaireFactory extends Factory
-{
+class AnneeScolaireFactory extends Factory {
     protected $model = AnneeScolaire::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         $year = $this->faker->numberBetween(2025, 2030);
 
         return [
@@ -21,8 +19,7 @@ class AnneeScolaireFactory extends Factory
         ];
     }
 
-    public function active(): static
-    {
+    public function active(): static {
         return $this->state(fn (array $attributes) => ['est_active' => true]);
     }
 }

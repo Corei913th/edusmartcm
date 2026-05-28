@@ -4,10 +4,9 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('audit_logs', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('audit_logs', function (Blueprint $table): void {
             $table->bigIncrements('id');
             $table->foreignUuid('utilisateur_id')->nullable()->constrained('utilisateurs');
             $table->string('action', 100);
@@ -23,8 +22,7 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('audit_logs');
     }
 };

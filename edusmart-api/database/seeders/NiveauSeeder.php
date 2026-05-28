@@ -5,10 +5,12 @@ namespace Database\Seeders;
 use App\Models\Niveau;
 use Illuminate\Database\Seeder;
 
-class NiveauSeeder extends Seeder
-{
-    public function run(): void
-    {
+class NiveauSeeder extends Seeder {
+    public function run(): void {
+        if (Niveau::count() > 0) {
+            return;
+        }
+
         $niveaux = [
             ['code' => '6eme', 'libelle' => 'Sixième', 'ordre' => 1],
             ['code' => '5eme', 'libelle' => 'Cinquième', 'ordre' => 2],

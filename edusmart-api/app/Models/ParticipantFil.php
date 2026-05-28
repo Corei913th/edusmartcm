@@ -10,8 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $utilisateur_id
  * @property string $lu_at
  */
-class ParticipantFil extends Model
-{
+class ParticipantFil extends Model {
     protected $table = 'participants_fil';
 
     public $incrementing = false;
@@ -28,13 +27,11 @@ class ParticipantFil extends Model
         'lu_at' => 'datetime',
     ];
 
-    public function filDiscussion(): BelongsTo
-    {
+    public function filDiscussion(): BelongsTo {
         return $this->belongsTo(FilDiscussion::class, 'fil_id');
     }
 
-    public function utilisateur(): BelongsTo
-    {
+    public function utilisateur(): BelongsTo {
         return $this->belongsTo(Utilisateur::class, 'utilisateur_id');
     }
 }

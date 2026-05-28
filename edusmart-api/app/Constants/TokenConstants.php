@@ -2,8 +2,7 @@
 
 namespace App\Constants;
 
-class TokenConstants
-{
+class TokenConstants {
     public const DEFAULT_ACCESS_TOKEN_NAME = 'auth_token';
 
     public const DEFAULT_REFRESH_TOKEN_NAME = 'refresh_token';

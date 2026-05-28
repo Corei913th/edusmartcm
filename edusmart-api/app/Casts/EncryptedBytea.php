@@ -3,6 +3,7 @@
 namespace App\Casts;
 
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 
 /**
@@ -10,16 +11,13 @@ use Illuminate\Support\Facades\Crypt;
  *
  * Handles PostgreSQL hex-encoded bytea format transparently.
  */
-class EncryptedBytea implements CastsAttributes
-{
+class EncryptedBytea implements CastsAttributes {
     /**
      * Decrypt a BYTEA value from PostgreSQL.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @param  mixed  $value
+     * @param Model $model
      */
-    public function get($model, string $key, $value, array $attributes): ?string
-    {
+    public function get($model, string $key, $value, array $attributes): ?string {
         if ($value === null) {
             return null;
         }
@@ -32,11 +30,9 @@ class EncryptedBytea implements CastsAttributes
     /**
      * Encrypt a value for storage as BYTEA.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @param  mixed  $value
+     * @param Model $model
      */
-    public function set($model, string $key, $value, array $attributes): ?string
-    {
+    public function set($model, string $key, $value, array $attributes): ?string {
         if ($value === null) {
             return null;
         }
@@ -49,8 +45,7 @@ class EncryptedBytea implements CastsAttributes
     /**
      * Convert PostgreSQL hex bytea (\x...) to raw binary.
      */
-    private function decodeBytea(string $value): string
-    {
+    private function decodeBytea(string $value): string {
         if (str_starts_with($value, '\x')) {
             return hex2bin(substr($value, 2)) ?: $value;
         }
@@ -61,8 +56,7 @@ class EncryptedBytea implements CastsAttributes
     /**
      * Convert raw binary to PostgreSQL hex bytea format.
      */
-    private function encodeBytea(string $value): string
-    {
+    private function encodeBytea(string $value): string {
         return '\x' . bin2hex($value);
     }
 }

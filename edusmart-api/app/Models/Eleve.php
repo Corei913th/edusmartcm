@@ -7,31 +7,35 @@ use App\Traits\BelongsToEtablissement;
 use App\Traits\HasEncryptedPii;
 use App\Traits\HasUpdatedAtTrigger;
 use App\Traits\UsesUuidAsPrimaryKey;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
- * @property string $id
+ * @property string      $id
  * @property string|null $utilisateur_id
- * @property string $etablissement_id
- * @property string $matricule
- * @property string $nom
- * @property string $prenom
+ * @property string      $etablissement_id
+ * @property string      $matricule
+ * @property string      $nom
+ * @property string      $prenom
  * @property string|null $date_naissance
- * @property string $lieu_naissance
- * @property Sexe $sexe
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- *
+ * @property string      $lieu_naissance
+ * @property Sexe        $sexe
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Utilisateur|null $utilisateur
  * @property-read Etablissement $etablissement
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Inscription> $inscriptions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, RattachementParentEleve> $rattachementsParentEleve
  */
-class Eleve extends Model
-{
-    use BelongsToEtablissement, HasEncryptedPii, HasUpdatedAtTrigger, UsesUuidAsPrimaryKey;
+class Eleve extends Model {
+    use BelongsToEtablissement;
+    use HasEncryptedPii;
+    use HasFactory;
+    use HasUpdatedAtTrigger;
+    use UsesUuidAsPrimaryKey;
 
     protected $fillable = [
         'utilisateur_id', 'etablissement_id', 'matricule',
@@ -40,26 +44,22 @@ class Eleve extends Model
 
     protected array $encrypted = ['nom', 'prenom', 'lieu_naissance'];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'sexe' => Sexe::class,
             'date_naissance' => 'date:Y-m-d',
         ];
     }
 
-    public function utilisateur(): BelongsTo
-    {
+    public function utilisateur(): BelongsTo {
         return $this->belongsTo(Utilisateur::class, 'utilisateur_id');
     }
 
-    public function inscriptions(): HasMany
-    {
+    public function inscriptions(): HasMany {
         return $this->hasMany(Inscription::class);
     }
 
-    public function rattachementsParentEleve(): HasMany
-    {
+    public function rattachementsParentEleve(): HasMany {
         return $this->hasMany(RattachementParentEleve::class);
     }
 }

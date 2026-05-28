@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('moyennes_matieres', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('moyennes_matieres', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('inscription_id')->constrained('inscriptions');
             $table->foreignUuid('affectation_id')->constrained('affectations_enseignement');
@@ -23,8 +22,7 @@ return new class extends Migration {
         DB::statement("ALTER TABLE moyennes_matieres ADD CONSTRAINT moyennes_appreciation_check CHECK (appreciation IS NULL OR appreciation IN ('TRES_BIEN','BIEN','ASSEZ_BIEN','PASSABLE','MEDIOCRE','INSUFFISANT'))");
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('moyennes_matieres');
     }
 };

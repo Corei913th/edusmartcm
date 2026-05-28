@@ -8,12 +8,10 @@ use App\Models\Utilisateur;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 
-class UtilisateurFactory extends Factory
-{
+class UtilisateurFactory extends Factory {
     protected $model = Utilisateur::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'role_code' => Role::ENSEIGNANT,
             'etablissement_id' => Etablissement::factory(),

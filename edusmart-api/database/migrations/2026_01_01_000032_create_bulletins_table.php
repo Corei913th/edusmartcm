@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('bulletins', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('bulletins', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('inscription_id')->constrained('inscriptions');
             $table->foreignId('periode_id')->constrained('periodes');
@@ -26,8 +25,7 @@ return new class extends Migration {
         DB::statement('CREATE INDEX idx_bulletins_publie ON bulletins(est_publie, publie_at) WHERE est_publie = TRUE');
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('bulletins');
     }
 };

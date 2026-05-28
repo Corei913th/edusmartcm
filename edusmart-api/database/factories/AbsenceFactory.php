@@ -8,12 +8,10 @@ use App\Models\Inscription;
 use App\Models\Utilisateur;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class AbsenceFactory extends Factory
-{
+class AbsenceFactory extends Factory {
     protected $model = Absence::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'inscription_id' => Inscription::factory(),
             'date_absence' => $this->faker->date(),

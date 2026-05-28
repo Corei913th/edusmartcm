@@ -9,19 +9,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property string $id
- * @property string $notification_id
+ * @property string            $id
+ * @property string            $notification_id
  * @property CanalNotification $canal
- * @property StatutEnvoi $statut
- * @property int $tentatives
- * @property string $derniere_tentative
- * @property string $erreur
- * @property string $envoye_at
- * @property string $created_at
- * @property string $updated_at
+ * @property StatutEnvoi       $statut
+ * @property int               $tentatives
+ * @property string            $derniere_tentative
+ * @property string            $erreur
+ * @property string            $envoye_at
+ * @property string            $created_at
+ * @property string            $updated_at
  */
-class EnvoiNotification extends Model
-{
+class EnvoiNotification extends Model {
     use UsesUuidAsPrimaryKey;
 
     protected $table = 'envois_notifications';
@@ -47,8 +46,7 @@ class EnvoiNotification extends Model
         'envoye_at' => 'datetime',
     ];
 
-    public function notification(): BelongsTo
-    {
+    public function notification(): BelongsTo {
         return $this->belongsTo(Notification::class, 'notification_id');
     }
 }

@@ -4,10 +4,9 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('participants_fil', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('participants_fil', function (Blueprint $table): void {
             $table->foreignUuid('fil_id')->constrained('fils_discussion')->onDelete('cascade');
             $table->foreignUuid('utilisateur_id')->constrained('utilisateurs')->onDelete('cascade');
             $table->dateTimeTz('lu_at')->nullable();
@@ -15,8 +14,7 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('participants_fil');
     }
 };

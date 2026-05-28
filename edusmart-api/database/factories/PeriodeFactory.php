@@ -6,12 +6,10 @@ use App\Models\AnneeScolaire;
 use App\Models\Periode;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class PeriodeFactory extends Factory
-{
+class PeriodeFactory extends Factory {
     protected $model = Periode::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'annee_id' => AnneeScolaire::factory(),
             'numero' => $this->faker->numberBetween(1, 3),

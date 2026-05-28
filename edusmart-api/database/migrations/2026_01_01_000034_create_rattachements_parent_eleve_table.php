@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('rattachements_parent_eleve', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('rattachements_parent_eleve', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('parent_id')->constrained('parents_tuteurs');
             $table->foreignUuid('eleve_id')->constrained('eleves');
@@ -26,8 +25,7 @@ return new class extends Migration {
         DB::statement("ALTER TABLE rattachements_parent_eleve ADD CONSTRAINT rattachements_lien_check CHECK (lien IN ('PERE','MERE','TUTEUR','AUTRE'))");
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('rattachements_parent_eleve');
     }
 };

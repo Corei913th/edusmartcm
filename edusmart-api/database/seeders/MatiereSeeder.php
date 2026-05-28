@@ -5,10 +5,12 @@ namespace Database\Seeders;
 use App\Models\Matiere;
 use Illuminate\Database\Seeder;
 
-class MatiereSeeder extends Seeder
-{
-    public function run(): void
-    {
+class MatiereSeeder extends Seeder {
+    public function run(): void {
+        if (Matiere::count() > 0) {
+            return;
+        }
+
         $matieres = [
             ['code' => 'MAT', 'nom' => 'Mathématiques', 'coefficient_defaut' => 4, 'type' => 'GENERALE'],
             ['code' => 'PHY', 'nom' => 'Physique', 'coefficient_defaut' => 3, 'type' => 'GENERALE'],

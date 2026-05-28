@@ -6,12 +6,10 @@ use App\Models\Eleve;
 use App\Models\Etablissement;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class EleveFactory extends Factory
-{
+class EleveFactory extends Factory {
     protected $model = Eleve::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'etablissement_id' => Etablissement::factory(),
             'matricule' => $this->faker->unique()->bothify('STU-####-????'),

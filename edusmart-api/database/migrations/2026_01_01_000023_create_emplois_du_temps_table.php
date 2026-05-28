@@ -4,10 +4,9 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('emplois_du_temps', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('emplois_du_temps', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('affectation_id')->constrained('affectations_enseignement');
             $table->foreignUuid('salle_id')->nullable()->constrained('salles');
@@ -17,8 +16,7 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('emplois_du_temps');
     }
 };

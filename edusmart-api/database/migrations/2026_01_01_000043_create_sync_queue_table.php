@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('sync_queue', function (Blueprint $table) {
+return new class () extends Migration {
+    public function up(): void {
+        Schema::create('sync_queue', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('utilisateur_id')->constrained('utilisateurs');
             $table->string('methode', 10);
@@ -27,8 +26,7 @@ return new class extends Migration {
         DB::statement("CREATE INDEX idx_sync_queue_pending ON sync_queue(statut, tentatives) WHERE statut = 'EN_ATTENTE'");
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('sync_queue');
     }
 };
