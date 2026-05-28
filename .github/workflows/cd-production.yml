@@ -28,11 +28,11 @@ jobs:
         env:
           PROD_ENV_FILE: ${{ secrets.PROD_ENV_FILE }}
         run: |
-          printf '%s' "$PROD_ENV_FILE" > edusmart-api/.env
-          grep -q "^APP_KEY=" edusmart-api/.env || echo "APP_KEY=" >> edusmart-api/.env
+          printf '%s' "$PROD_ENV_FILE" > .env
+          grep -q "^APP_KEY=" .env || echo "APP_KEY=" >> .env
           NEW_KEY=$(php -r "echo 'base64:'.base64_encode(random_bytes(32));")
-          sed -i 's|^APP_KEY=.*|APP_KEY='${NEW_KEY}'|' edusmart-api/.env
-          echo "deploy" > edusmart-api/deploy.flag
+          sed -i 's|^APP_KEY=.*|APP_KEY='${NEW_KEY}'|' .env
+          echo "deploy" > deploy.flag
 
       - name: "📤 Déploiement Backend via FTP"
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -40,7 +40,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./edusmart-api/
+          local-dir: ./
           server-dir: public_html/bogning/edusmart/api/
           exclude: |
             **/vendor/**
