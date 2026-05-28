@@ -1,0 +1,40 @@
+#!/bin/sh
+# EduSmart CM — Commit-msg hook
+# Validates Conventional Commits format: type(scope): description
+#   or the minimal form: type: description
+
+set -e
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Skip merge commits and fixup!/squash! lines
+case "$COMMIT_MSG" in
+  merge*) exit 0 ;;
+  fixup!* | squash!*) exit 0 ;;
+esac
+
+ALLOWED_TYPES="feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert"
+
+# Pattern: type(scope): description  OR  type: description
+PATTERN="^($ALLOWED_TYPES)(\([a-zA-Z0-9._-]+\))?!?: .+$"
+
+if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
+    echo ""
+    echo "┌─ Invalid commit message ─────────────────────────┐"
+    echo "│"
+    echo "│  Format:  type(scope): description"
+    echo "│  or:      type: description"
+    echo "│"
+    echo "│  Allowed types: feat, fix, chore, docs, style,"
+    echo "│                refactor, perf, test, build, ci, revert"
+    echo "│"
+    echo "│  Example: feat(auth): add login endpoint"
+    echo "│           fix(api): handle null pointer"
+    echo "│           chore: update deps"
+    echo "│"
+    echo "│  Got:  $COMMIT_MSG"
+    echo "│"
+    echo "└──────────────────────────────────────────────────┘"
+    exit 1
+fi
