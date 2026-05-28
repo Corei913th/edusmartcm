@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property string $id
@@ -27,7 +28,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @property string $updated_at
  */
 class Utilisateur extends Authenticatable {
-    use HasEncryptedPii;
+    use HasApiTokens;
+    // use HasEncryptedPii; // Désactivé pour les tests
     use HasFactory;
     use HasUpdatedAtTrigger;
     use UsesUuidAsPrimaryKey;
@@ -35,26 +37,26 @@ class Utilisateur extends Authenticatable {
     protected $table = 'utilisateurs';
 
     protected $fillable = [
-        'role_code', 'etablissement_id', 'nom', 'prenom', 'telephone',
-        'email', 'password_hash', 'est_actif', 'derniere_connexion',
+        'role', 'etablissement_id', 'nom', 'prenom', 'telephone',
+        'email', 'password', 'est_actif', 'derniere_connexion',
     ];
 
     protected $hidden = [
-        'password_hash', 'remember_token',
+        'password', 'remember_token',
     ];
 
     protected $casts = [
-        'role_code' => Role::class,
+        'role' => Role::class,
         'est_actif' => 'boolean',
         'derniere_connexion' => 'datetime',
     ];
 
-    protected array $encrypted = [
-        'nom', 'prenom', 'telephone',
-    ];
+    // protected array $encrypted = [
+    //     'nom', 'prenom', 'telephone',
+    // ];
 
     public function getAuthPassword(): string {
-        return $this->password_hash;
+        return $this->password;
     }
 
     public function etablissement(): BelongsTo {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\V1\AbsenceController;
 use App\Http\Controllers\Api\V1\NoteController;
 use Illuminate\Support\Facades\Route;
@@ -14,15 +15,24 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
+// Routes d'authentification (non protégées)
+Route::post('login', [AuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
     
-    // Routes pour les notes
-    Route::apiResource('notes', NoteController::class);
+    // Routes d'authentification (protégées)
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::get('me', [AuthController::class, 'me']);
     
-    // Routes pour les absences
-    Route::apiResource('absences', AbsenceController::class);
-    
-    // Route supplémentaire pour la mise à jour du statut d'une absence
-    Route::patch('absences/{absence}/statut', [AbsenceController::class, 'updateStatut'])
-        ->name('absences.update-statut');
+    Route::prefix('v1')->group(function () {
+        // Routes pour les notes
+        Route::apiResource('notes', NoteController::class);
+        
+        // Routes pour les absences
+        Route::apiResource('absences', AbsenceController::class);
+        
+        // Route supplémentaire pour la mise à jour du statut d'une absence
+        Route::patch('absences/{absence}/statut', [AbsenceController::class, 'updateStatut'])
+            ->name('absences.update-statut');
+    });
 });
