@@ -11,22 +11,20 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * Contrôleur d'authentification pour les tests API
- * 
+ *
  * @group Authentication
- * 
+ *
  * Gère l'authentification pour les tests Postman.
  */
-class AuthController extends Controller
-{
+class AuthController extends Controller {
     /**
      * Connexion et génération de token Sanctum
      *
      * @param Request $request Requête avec email et password
-     * @return JsonResponse
+     *
      * @throws ValidationException
      */
-    public function login(Request $request): JsonResponse
-    {
+    public function login(Request $request): JsonResponse {
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
@@ -58,10 +56,8 @@ class AuthController extends Controller
      * Déconnexion et révocation du token
      *
      * @param Request $request Requête authentifiée
-     * @return JsonResponse
      */
-    public function logout(Request $request): JsonResponse
-    {
+    public function logout(Request $request): JsonResponse {
         $request->user()->currentAccessToken()->delete();
 
         return api_success(null, 'Déconnexion réussie');
@@ -71,10 +67,8 @@ class AuthController extends Controller
      * Informations de l'utilisateur connecté
      *
      * @param Request $request Requête authentifiée
-     * @return JsonResponse
      */
-    public function me(Request $request): JsonResponse
-    {
+    public function me(Request $request): JsonResponse {
         return api_success([
             'id' => $request->user()->id,
             'nom' => $request->user()->nom,

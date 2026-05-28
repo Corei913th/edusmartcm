@@ -14,27 +14,23 @@ use Illuminate\Support\Str;
 /**
  * Seeder pour créer des données de test pour Postman
  */
-class TestDataSeeder extends Seeder
-{
+class TestDataSeeder extends Seeder {
     /**
      * Exécute le seeder
-     *
-     * @return void
      */
-    public function run(): void
-    {
+    public function run(): void {
         // Créer les tables minimales pour les tests
         $this->createTables();
-        
+
         // Créer un utilisateur de test
         $user = $this->createTestUser();
-        
+
         // Créer des données de référence
         $this->createReferenceData();
-        
+
         // Créer des notes et absences de test
         $this->createTestData();
-        
+
         $this->command->info('Données de test créées avec succès !');
         $this->command->info('Utilisateur de test : test@edusmartcm.com / password');
         $this->command->info('Token API : Utilisez POST /api/login pour obtenir un token');
@@ -43,8 +39,7 @@ class TestDataSeeder extends Seeder
     /**
      * Crée les tables minimales nécessaires
      */
-    private function createTables(): void
-    {
+    private function createTables(): void {
         // Table utilisateurs
         DB::statement('CREATE TABLE IF NOT EXISTS utilisateurs (
             id TEXT PRIMARY KEY,
@@ -136,10 +131,9 @@ class TestDataSeeder extends Seeder
     /**
      * Crée un utilisateur de test
      */
-    private function createTestUser(): string
-    {
+    private function createTestUser(): string {
         $userId = Str::uuid()->toString();
-        
+
         DB::table('utilisateurs')->insert([
             'id' => $userId,
             'nom' => 'Test',
@@ -157,14 +151,13 @@ class TestDataSeeder extends Seeder
     /**
      * Crée des données de référence
      */
-    private function createReferenceData(): void
-    {
+    private function createReferenceData(): void {
         // Inscriptions
         $inscriptionIds = [];
         for ($i = 1; $i <= 3; $i++) {
             $id = Str::uuid()->toString();
             $inscriptionIds[] = $id;
-            
+
             DB::table('inscriptions')->insert([
                 'id' => $id,
                 'eleve_id' => Str::uuid()->toString(),
@@ -178,7 +171,7 @@ class TestDataSeeder extends Seeder
         for ($i = 1; $i <= 3; $i++) {
             $id = Str::uuid()->toString();
             $affectationIds[] = $id;
-            
+
             DB::table('affectations_enseignement')->insert([
                 'id' => $id,
                 'matiere_id' => Str::uuid()->toString(),
@@ -193,7 +186,7 @@ class TestDataSeeder extends Seeder
         foreach ($periodes as $index => $nom) {
             $id = Str::uuid()->toString();
             $periodeIds[] = $id;
-            
+
             DB::table('periodes')->insert([
                 'id' => $id,
                 'nom' => $nom,
@@ -212,8 +205,7 @@ class TestDataSeeder extends Seeder
     /**
      * Crée des notes et absences de test
      */
-    private function createTestData(): void
-    {
+    private function createTestData(): void {
         $userId = DB::table('utilisateurs')->where('email', 'test@edusmartcm.com')->value('id');
         $inscriptionIds = cache('test_inscription_ids');
         $affectationIds = cache('test_affectation_ids');
@@ -221,7 +213,7 @@ class TestDataSeeder extends Seeder
 
         // Créer des notes de test
         $typeEvaluations = [TypeEvaluation::DEVOIR, TypeEvaluation::COMPOSITION, TypeEvaluation::ORAL];
-        
+
         for ($i = 0; $i < 5; $i++) {
             DB::table('notes')->insert([
                 'id' => Str::uuid()->toString(),
@@ -241,7 +233,7 @@ class TestDataSeeder extends Seeder
 
         // Créer des absences de test
         $statuts = [StatutAbsence::JUSTIFIEE, StatutAbsence::INJUSTIFIEE, StatutAbsence::EN_ATTENTE];
-        
+
         for ($i = 0; $i < 5; $i++) {
             DB::table('absences')->insert([
                 'id' => Str::uuid()->toString(),

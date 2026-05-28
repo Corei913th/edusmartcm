@@ -15,13 +15,13 @@ use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property string $id
- * @property Role   $role_code
+ * @property string $role
  * @property int    $etablissement_id
  * @property string $nom
  * @property string $prenom
  * @property string $telephone
  * @property string $email
- * @property string $password_hash
+ * @property string $password
  * @property bool   $est_actif
  * @property string $derniere_connexion
  * @property string $created_at
@@ -29,6 +29,7 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class Utilisateur extends Authenticatable {
     use HasApiTokens;
+
     // use HasEncryptedPii; // Désactivé pour les tests
     use HasFactory;
     use HasUpdatedAtTrigger;

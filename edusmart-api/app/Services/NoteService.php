@@ -3,26 +3,24 @@
 namespace App\Services;
 
 use App\Models\Note;
+use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Service de gestion des notes
- * 
+ *
  * Gère toute la logique métier liée aux notes des élèves.
  * Toutes les opérations de base de données sont encapsulées dans des transactions.
  */
-class NoteService
-{
+class NoteService {
     /**
      * Récupère une liste paginée de notes avec filtres optionnels
      *
      * @param array $filters Filtres à appliquer (inscription_id, affectation_id, periode_id, type_evaluation)
-     * @param int $perPage Nombre d'éléments par page (défaut: 15)
-     * @return LengthAwarePaginator
+     * @param int   $perPage Nombre d'éléments par page (défaut: 15)
      */
-    public function list(array $filters = [], int $perPage = 15): LengthAwarePaginator
-    {
+    public function list(array $filters = [], int $perPage = 15): LengthAwarePaginator {
         return runTransaction(function () use ($filters, $perPage) {
             $query = Note::query()
                 ->with(['inscription.eleve', 'affectationEnseignement.matiere', 'periode', 'createur'])
@@ -37,16 +35,15 @@ class NoteService
     /**
      * Crée une nouvelle note
      *
-     * @param array $data Données de la note
+     * @param array  $data      Données de la note
      * @param string $createdBy ID de l'utilisateur créateur
-     * @return Note
-     * @throws \Exception
+     *
+     * @throws Exception
      */
-    public function create(array $data, string $createdBy): Note
-    {
+    public function create(array $data, string $createdBy): Note {
         return runTransaction(function () use ($data, $createdBy) {
             $data['created_by'] = $createdBy;
-            
+
             return Note::create($data);
         }, 'NoteService::create');
     }
@@ -55,10 +52,8 @@ class NoteService
      * Trouve une note par son ID
      *
      * @param string $id ID de la note
-     * @return Note|null
      */
-    public function find(string $id): ?Note
-    {
+    public function find(string $id): ?Note {
         return runTransaction(function () use ($id) {
             return Note::with(['inscription.eleve', 'affectationEnseignement.matiere', 'periode', 'createur'])
                 ->find($id);
@@ -68,16 +63,15 @@ class NoteService
     /**
      * Met à jour une note existante
      *
-     * @param Note $note Instance de la note à mettre à jour
+     * @param Note  $note Instance de la note à mettre à jour
      * @param array $data Nouvelles données
-     * @return Note
-     * @throws \Exception
+     *
+     * @throws Exception
      */
-    public function update(Note $note, array $data): Note
-    {
+    public function update(Note $note, array $data): Note {
         return runTransaction(function () use ($note, $data) {
             $note->update($data);
-            
+
             return $note->fresh(['inscription.eleve', 'affectationEnseignement.matiere', 'periode', 'createur']);
         }, 'NoteService::update');
     }
@@ -86,11 +80,10 @@ class NoteService
      * Supprime une note
      *
      * @param Note $note Instance de la note à supprimer
-     * @return bool
-     * @throws \Exception
+     *
+     * @throws Exception
      */
-    public function delete(Note $note): bool
-    {
+    public function delete(Note $note): bool {
         return runTransaction(function () use ($note) {
             return $note->delete();
         }, 'NoteService::delete');
@@ -99,12 +92,10 @@ class NoteService
     /**
      * Applique les filtres à la requête
      *
-     * @param Builder $query Requête Eloquent
-     * @param array $filters Filtres à appliquer
-     * @return void
+     * @param Builder $query   Requête Eloquent
+     * @param array   $filters Filtres à appliquer
      */
-    private function applyFilters(Builder $query, array $filters): void
-    {
+    private function applyFilters(Builder $query, array $filters): void {
         if (!empty($filters['inscription_id'])) {
             $query->where('inscription_id', $filters['inscription_id']);
         }
