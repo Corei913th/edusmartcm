@@ -7,12 +7,10 @@ use App\Models\Inscription;
 use App\Models\Periode;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class BulletinFactory extends Factory
-{
+class BulletinFactory extends Factory {
     protected $model = Bulletin::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'inscription_id'        => Inscription::factory(),
             'periode_id'            => Periode::factory(),
@@ -24,8 +22,7 @@ class BulletinFactory extends Factory
         ];
     }
 
-    public function publie(): static
-    {
+    public function publie(): static {
         return $this->state(fn (array $attributes) => [
             'est_publie' => true,
             'publie_at'  => now(),

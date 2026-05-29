@@ -18,12 +18,10 @@ use Tests\TestCase;
  *
  * @author Derrick <ngaha.derrick@nexatec.cm>
  */
-class BulletinControllerTest extends TestCase
-{
+class BulletinControllerTest extends TestCase {
     use RefreshDatabase;
 
-    public function test_parent_can_access_published_bulletins_for_student(): void
-    {
+    public function testParentCanAccessPublishedBulletinsForStudent(): void {
         $parent = Utilisateur::factory()->create(['role_code' => Role::PARENT]);
         Sanctum::actingAs($parent);
 
@@ -35,12 +33,11 @@ class BulletinControllerTest extends TestCase
         ]);
 
         $this->getJson("/api/inscriptions/{$inscription->id}/bulletins")
-             ->assertOk()
-             ->assertJsonCount(2, 'data');
+            ->assertOk()
+            ->assertJsonCount(2, 'data');
     }
 
-    public function test_parent_cannot_see_unpublished_bulletins(): void
-    {
+    public function testParentCannotSeeUnpublishedBulletins(): void {
         $parent = Utilisateur::factory()->create(['role_code' => Role::PARENT]);
         Sanctum::actingAs($parent);
 
@@ -51,12 +48,11 @@ class BulletinControllerTest extends TestCase
         ]);
 
         $this->getJson("/api/inscriptions/{$inscription->id}/bulletins")
-             ->assertOk()
-             ->assertJsonCount(0, 'data');
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
     }
 
-    public function test_direction_can_see_all_bulletins_including_unpublished(): void
-    {
+    public function testDirectionCanSeeAllBulletinsIncludingUnpublished(): void {
         $direction = Utilisateur::factory()->create(['role_code' => Role::DIRECTION]);
         Sanctum::actingAs($direction);
 
@@ -65,20 +61,18 @@ class BulletinControllerTest extends TestCase
         Bulletin::factory()->count(2)->create(['inscription_id' => $inscription->id, 'est_publie' => false]);
 
         $this->getJson("/api/inscriptions/{$inscription->id}/bulletins")
-             ->assertOk()
-             ->assertJsonCount(3, 'data');
+            ->assertOk()
+            ->assertJsonCount(3, 'data');
     }
 
-    public function test_unauthenticated_user_cannot_access_bulletins(): void
-    {
+    public function testUnauthenticatedUserCannotAccessBulletins(): void {
         $inscription = Inscription::factory()->create();
 
         $this->getJson("/api/inscriptions/{$inscription->id}/bulletins")
-             ->assertUnauthorized();
+            ->assertUnauthorized();
     }
 
-    public function test_direction_can_publish_a_bulletin(): void
-    {
+    public function testDirectionCanPublishABulletin(): void {
         $direction = Utilisateur::factory()->create(['role_code' => Role::DIRECTION]);
         Sanctum::actingAs($direction);
 
@@ -89,8 +83,8 @@ class BulletinControllerTest extends TestCase
         ]);
 
         $this->patchJson("/api/bulletins/{$bulletin->id}/publier")
-             ->assertOk()
-             ->assertJsonPath('data.est_publie', true);
+            ->assertOk()
+            ->assertJsonPath('data.est_publie', true);
 
         $this->assertDatabaseHas('bulletins', [
             'id'         => $bulletin->id,
@@ -98,8 +92,7 @@ class BulletinControllerTest extends TestCase
         ]);
     }
 
-    public function test_parent_cannot_publish_a_bulletin(): void
-    {
+    public function testParentCannotPublishABulletin(): void {
         $parent = Utilisateur::factory()->create(['role_code' => Role::PARENT]);
         Sanctum::actingAs($parent);
 
@@ -110,6 +103,6 @@ class BulletinControllerTest extends TestCase
         ]);
 
         $this->patchJson("/api/bulletins/{$bulletin->id}/publier")
-             ->assertForbidden();
+            ->assertForbidden();
     }
 }

@@ -9,12 +9,10 @@ use App\Models\Eleve;
 use App\Models\Inscription;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class InscriptionFactory extends Factory
-{
+class InscriptionFactory extends Factory {
     protected $model = Inscription::class;
 
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'eleve_id'         => Eleve::factory(),
             'classe_id'        => Classe::factory(),
