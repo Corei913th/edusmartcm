@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\UsesUuidAsPrimaryKey;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $updated_at
  */
 class Bulletin extends Model {
+    use HasFactory;
     use UsesUuidAsPrimaryKey;
 
     protected $table = 'bulletins';
