@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\StatutInscription;
 use App\Traits\UsesUuidAsPrimaryKey;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -30,6 +31,7 @@ use Illuminate\Support\Carbon;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Radiation> $radiations
  */
 class Inscription extends Model {
+    use HasFactory;
     use UsesUuidAsPrimaryKey;
 
     protected $table = 'inscriptions';
