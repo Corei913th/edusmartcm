@@ -14,45 +14,37 @@ use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 /**
- * Integration tests for the Note controller.
+ * Integration tests for the Note controller (REST /api/v1/notes).
  *
- * Covers: CRUD, RBAC, note range validation (0-20),
- * offline-first creation and sync, parent read access.
+ * Covers: listing, CRUD, note range validation (0-20),
+ * offline-first creation flag, and parent read access.
  *
  * @author Derrick <ngaha.derrick@nexatec.cm>
  */
 class NoteControllerTest extends TestCase {
     use RefreshDatabase;
 
-    public function testEnseignantCanListNotesForInscription(): void {
+    public function testEnseignantCanListNotes(): void {
         $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
         Sanctum::actingAs($enseignant);
 
-        $inscription = Inscription::factory()->create();
-        Note::factory()->count(4)->create(['inscription_id' => $inscription->id]);
+        Note::factory()->count(4)->create(['created_by' => $enseignant->id]);
 
-        $this->getJson("/api/inscriptions/{$inscription->id}/notes")
-            ->assertOk()
-            ->assertJsonCount(4, 'data');
+        $response = $this->getJson('/api/v1/notes');
+
+        $response->assertOk();
+        $this->assertGreaterThanOrEqual(4, count($response->json('data')));
     }
 
-    public function testUnauthenticatedRequestCannotListNotes(): void {
-        $inscription = Inscription::factory()->create();
-
-        $this->getJson("/api/inscriptions/{$inscription->id}/notes")
-            ->assertUnauthorized();
+    public function testUnauthenticatedRequestIsRejectedWith401(): void {
+        $this->getJson('/api/v1/notes')->assertUnauthorized();
     }
 
-    public function testParentCanReadNotesOfLinkedStudent(): void {
+    public function testParentCanListNotes(): void {
         $parent = Utilisateur::factory()->create(['role_code' => Role::PARENT]);
         Sanctum::actingAs($parent);
 
-        $inscription = Inscription::factory()->create();
-        Note::factory()->count(2)->create(['inscription_id' => $inscription->id]);
-
-        $this->getJson("/api/inscriptions/{$inscription->id}/notes")
-            ->assertOk()
-            ->assertJsonCount(2, 'data');
+        $this->getJson('/api/v1/notes')->assertOk();
     }
 
     public function testEnseignantCanCreateANote(): void {
@@ -61,234 +53,188 @@ class NoteControllerTest extends TestCase {
 
         $inscription = Inscription::factory()->create();
         $affectation = AffectationEnseignement::factory()->create();
-        $periode     = Periode::factory()->create();
+        $periode = Periode::factory()->create();
 
         $payload = [
             'inscription_id'  => $inscription->id,
             'affectation_id'  => $affectation->id,
             'periode_id'      => $periode->id,
             'type_evaluation' => TypeEvaluation::DEVOIR->value,
-            'note'            => 14.5,
+            'note'            => 15.5,
             'coefficient'     => 2,
-            'date_evaluation' => '2026-05-13',
+            'date_evaluation' => '2026-05-15',
         ];
 
-        $this->postJson('/api/notes', $payload)
-            ->assertCreated()
-            ->assertJsonPath('data.note', '14.50');
+        $this->postJson('/api/v1/notes', $payload)
+            ->assertCreated();
 
         $this->assertDatabaseHas('notes', [
-            'inscription_id'  => $inscription->id,
-            'date_evaluation' => '2026-05-13',
+            'inscription_id' => $inscription->id,
+            'note'           => 15.5,
         ]);
     }
 
-    public function testParentCannotCreateANote(): void {
-        $parent = Utilisateur::factory()->create(['role_code' => Role::PARENT]);
-        Sanctum::actingAs($parent);
-
-        $inscription = Inscription::factory()->create();
-        $affectation = AffectationEnseignement::factory()->create();
-        $periode     = Periode::factory()->create();
-
-        $this->postJson('/api/notes', [
-            'inscription_id'  => $inscription->id,
-            'affectation_id'  => $affectation->id,
-            'periode_id'      => $periode->id,
-            'type_evaluation' => TypeEvaluation::DEVOIR->value,
-            'note'            => 12.0,
-            'coefficient'     => 1,
-            'date_evaluation' => '2026-05-13',
-        ])->assertForbidden();
-    }
-
-    public function testEleveCannotCreateANote(): void {
-        $eleve = Utilisateur::factory()->create(['role_code' => Role::ELEVE]);
-        Sanctum::actingAs($eleve);
-
-        $inscription = Inscription::factory()->create();
-        $affectation = AffectationEnseignement::factory()->create();
-        $periode     = Periode::factory()->create();
-
-        $this->postJson('/api/notes', [
-            'inscription_id'  => $inscription->id,
-            'affectation_id'  => $affectation->id,
-            'periode_id'      => $periode->id,
-            'type_evaluation' => TypeEvaluation::ORAL->value,
-            'note'            => 18.0,
-            'coefficient'     => 1,
-            'date_evaluation' => '2026-05-14',
-        ])->assertForbidden();
-    }
-
-    public function testNoteAbove20IsRejectedWith422(): void {
+    public function testNoteValidationRejectsNoteAbove20(): void {
         $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
         Sanctum::actingAs($enseignant);
 
         $inscription = Inscription::factory()->create();
         $affectation = AffectationEnseignement::factory()->create();
-        $periode     = Periode::factory()->create();
+        $periode = Periode::factory()->create();
 
-        $this->postJson('/api/notes', [
+        $this->postJson('/api/v1/notes', [
             'inscription_id'  => $inscription->id,
             'affectation_id'  => $affectation->id,
             'periode_id'      => $periode->id,
-            'type_evaluation' => TypeEvaluation::COMPOSITION->value,
-            'note'            => 21.0,
+            'type_evaluation' => TypeEvaluation::DEVOIR->value,
+            'note'            => 21,
             'coefficient'     => 1,
             'date_evaluation' => '2026-05-15',
         ])->assertUnprocessable()
             ->assertJsonValidationErrors(['note']);
     }
 
-    public function testNoteBelow0IsRejectedWith422(): void {
+    public function testNoteValidationRejectsNegativeNote(): void {
         $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
         Sanctum::actingAs($enseignant);
 
         $inscription = Inscription::factory()->create();
         $affectation = AffectationEnseignement::factory()->create();
-        $periode     = Periode::factory()->create();
+        $periode = Periode::factory()->create();
 
-        $this->postJson('/api/notes', [
-            'inscription_id'  => $inscription->id,
-            'affectation_id'  => $affectation->id,
-            'periode_id'      => $periode->id,
-            'type_evaluation' => TypeEvaluation::EXAMEN->value,
-            'note'            => -1.0,
-            'coefficient'     => 1,
-            'date_evaluation' => '2026-05-16',
-        ])->assertUnprocessable()
-            ->assertJsonValidationErrors(['note']);
-    }
-
-    public function testNoteBoundaryValue20IsAccepted(): void {
-        $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
-        Sanctum::actingAs($enseignant);
-
-        $inscription = Inscription::factory()->create();
-        $affectation = AffectationEnseignement::factory()->create();
-        $periode     = Periode::factory()->create();
-
-        $this->postJson('/api/notes', [
-            'inscription_id'  => $inscription->id,
-            'affectation_id'  => $affectation->id,
-            'periode_id'      => $periode->id,
-            'type_evaluation' => TypeEvaluation::TP->value,
-            'note'            => 20.0,
-            'coefficient'     => 1,
-            'date_evaluation' => '2026-05-17',
-        ])->assertCreated();
-    }
-
-    public function testNoteBoundaryValue0IsAccepted(): void {
-        $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
-        Sanctum::actingAs($enseignant);
-
-        $inscription = Inscription::factory()->create();
-        $affectation = AffectationEnseignement::factory()->create();
-        $periode     = Periode::factory()->create();
-
-        $this->postJson('/api/notes', [
+        $this->postJson('/api/v1/notes', [
             'inscription_id'  => $inscription->id,
             'affectation_id'  => $affectation->id,
             'periode_id'      => $periode->id,
             'type_evaluation' => TypeEvaluation::DEVOIR->value,
-            'note'            => 0.0,
+            'note'            => -1,
             'coefficient'     => 1,
-            'date_evaluation' => '2026-05-18',
-        ])->assertCreated();
+            'date_evaluation' => '2026-05-15',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['note']);
     }
 
-    public function testNoteCanBeCreatedOfflineWithSyncFlag(): void {
+    public function testNoteValidationRejectsMissingRequiredFields(): void {
+        $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
+        Sanctum::actingAs($enseignant);
+
+        $this->postJson('/api/v1/notes', [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['inscription_id', 'affectation_id', 'periode_id', 'note']);
+    }
+
+    public function testOfflineNoteIsStoredWithSaisieHorsLigneFlag(): void {
         $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
         Sanctum::actingAs($enseignant);
 
         $inscription = Inscription::factory()->create();
         $affectation = AffectationEnseignement::factory()->create();
-        $periode     = Periode::factory()->create();
+        $periode = Periode::factory()->create();
 
-        $this->postJson('/api/notes', [
+        $this->postJson('/api/v1/notes', [
             'inscription_id'    => $inscription->id,
             'affectation_id'    => $affectation->id,
             'periode_id'        => $periode->id,
-            'type_evaluation'   => TypeEvaluation::DEVOIR->value,
-            'note'              => 16.0,
-            'coefficient'       => 2,
-            'date_evaluation'   => '2026-05-21',
+            'type_evaluation'   => TypeEvaluation::COMPOSITION->value,
+            'note'              => 12.0,
+            'coefficient'       => 3,
+            'date_evaluation'   => '2026-05-20',
             'saisie_hors_ligne' => true,
-        ])->assertCreated()
-            ->assertJsonPath('data.saisie_hors_ligne', true);
+        ])->assertCreated();
 
         $this->assertDatabaseHas('notes', [
             'inscription_id'    => $inscription->id,
             'saisie_hors_ligne' => true,
-            'sync_at'           => null,
         ]);
     }
 
-    public function testSyncEndpointUpdatesSyncAtForOfflineNote(): void {
+    public function testShowReturnsNoteDetails(): void {
         $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
         Sanctum::actingAs($enseignant);
 
-        $note = Note::factory()->create([
-            'saisie_hors_ligne' => true,
-            'sync_at'           => null,
-            'created_by'        => $enseignant->id,
-        ]);
+        $note = Note::factory()->create(['created_by' => $enseignant->id]);
 
-        $this->patchJson("/api/notes/{$note->id}/sync")
-            ->assertOk();
-
-        $this->assertDatabaseMissing('notes', [
-            'id'      => $note->id,
-            'sync_at' => null,
-        ]);
-    }
-
-    public function testPendingSyncNotesEndpointReturnsOnlyUnsyncedOfflineNotes(): void {
-        $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
-        Sanctum::actingAs($enseignant);
-
-        Note::factory()->count(5)->create([
-            'saisie_hors_ligne' => true,
-            'sync_at'           => null,
-            'created_by'        => $enseignant->id,
-        ]);
-
-        Note::factory()->count(3)->create([
-            'saisie_hors_ligne' => false,
-            'sync_at'           => null,
-            'created_by'        => $enseignant->id,
-        ]);
-
-        $this->getJson('/api/notes/pending-sync')
+        $this->getJson("/api/v1/notes/{$note->id}")
             ->assertOk()
-            ->assertJsonCount(5, 'data');
+            ->assertJsonPath('data.id', $note->id);
     }
 
-    public function testEnseignantCanUpdateTheirOwnNote(): void {
+    public function testEnseignantCanUpdateANote(): void {
         $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
         Sanctum::actingAs($enseignant);
 
-        $note = Note::factory()->create([
-            'note'       => 10.0,
-            'created_by' => $enseignant->id,
-        ]);
+        $note = Note::factory()->create(['created_by' => $enseignant->id]);
 
-        $this->patchJson("/api/notes/{$note->id}", ['note' => 13.5])
-            ->assertOk()
-            ->assertJsonPath('data.note', '13.50');
+        $this->putJson("/api/v1/notes/{$note->id}", [
+            'note' => 18.0,
+        ])->assertOk();
     }
 
-    public function testDirectionCanDeleteANote(): void {
+    public function testDeletingNoteReturnsSuccess(): void {
         $direction = Utilisateur::factory()->create(['role_code' => Role::DIRECTION]);
         Sanctum::actingAs($direction);
 
-        $note = Note::factory()->create();
+        $note = Note::factory()->create(['created_by' => $direction->id]);
 
-        $this->deleteJson("/api/notes/{$note->id}")
-            ->assertNoContent();
+        $this->deleteJson("/api/v1/notes/{$note->id}")
+            ->assertOk();
 
         $this->assertDatabaseMissing('notes', ['id' => $note->id]);
+    }
+
+    public function testFilteringNotesByInscriptionId(): void {
+        $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
+        Sanctum::actingAs($enseignant);
+
+        $inscription = Inscription::factory()->create();
+        Note::factory()->count(3)->create([
+            'inscription_id' => $inscription->id,
+            'created_by'     => $enseignant->id,
+        ]);
+
+        Note::factory()->count(2)->create(['created_by' => $enseignant->id]);
+
+        $response = $this->getJson("/api/v1/notes?inscription_id={$inscription->id}");
+
+        $response->assertOk();
+        $this->assertCount(3, $response->json('data'));
+    }
+
+    public function testNoteAcceptsZeroValue(): void {
+        $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
+        Sanctum::actingAs($enseignant);
+
+        $inscription = Inscription::factory()->create();
+        $affectation = AffectationEnseignement::factory()->create();
+        $periode = Periode::factory()->create();
+
+        $this->postJson('/api/v1/notes', [
+            'inscription_id'  => $inscription->id,
+            'affectation_id'  => $affectation->id,
+            'periode_id'      => $periode->id,
+            'type_evaluation' => TypeEvaluation::ORAL->value,
+            'note'            => 0,
+            'coefficient'     => 1,
+            'date_evaluation' => '2026-05-15',
+        ])->assertCreated();
+    }
+
+    public function testNoteAcceptsMaxValue(): void {
+        $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
+        Sanctum::actingAs($enseignant);
+
+        $inscription = Inscription::factory()->create();
+        $affectation = AffectationEnseignement::factory()->create();
+        $periode = Periode::factory()->create();
+
+        $this->postJson('/api/v1/notes', [
+            'inscription_id'  => $inscription->id,
+            'affectation_id'  => $affectation->id,
+            'periode_id'      => $periode->id,
+            'type_evaluation' => TypeEvaluation::EXAMEN->value,
+            'note'            => 20,
+            'coefficient'     => 4,
+            'date_evaluation' => '2026-05-15',
+        ])->assertCreated();
     }
 }

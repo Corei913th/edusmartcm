@@ -2,107 +2,131 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Role;
 use App\Models\Bulletin;
 use App\Models\Inscription;
-use App\Models\Utilisateur;
+use App\Models\Periode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 /**
- * Integration tests for the Bulletin controller.
+ * Tests for the Bulletin model — persistence, relations, and publication flag.
  *
- * Validates that parents can consult published bulletins (offline-first
- * use-case) and that unpublished bulletins are hidden from non-admin roles.
+ * The bulletin REST endpoints are not yet exposed; these tests validate
+ * the data layer that will back the future BulletinController.
  *
  * @author Derrick <ngaha.derrick@nexatec.cm>
  */
 class BulletinControllerTest extends TestCase {
     use RefreshDatabase;
 
-    public function testParentCanAccessPublishedBulletinsForStudent(): void {
-        $parent = Utilisateur::factory()->create(['role_code' => Role::PARENT]);
-        Sanctum::actingAs($parent);
-
+    public function testBulletinCanBeCreatedWithCorrectAttributes(): void {
         $inscription = Inscription::factory()->create();
-        Bulletin::factory()->count(2)->create([
-            'inscription_id' => $inscription->id,
-            'est_publie'     => true,
-            'publie_at'      => now(),
+        $periode = Periode::factory()->create();
+
+        $bulletin = Bulletin::create([
+            'inscription_id'        => $inscription->id,
+            'periode_id'            => $periode->id,
+            'rang_classe'           => 3,
+            'moyenne_generale'      => 14.75,
+            'appreciation_generale' => 'Bon travail, continuez ainsi.',
+            'est_publie'            => false,
         ]);
-
-        $this->getJson("/api/inscriptions/{$inscription->id}/bulletins")
-            ->assertOk()
-            ->assertJsonCount(2, 'data');
-    }
-
-    public function testParentCannotSeeUnpublishedBulletins(): void {
-        $parent = Utilisateur::factory()->create(['role_code' => Role::PARENT]);
-        Sanctum::actingAs($parent);
-
-        $inscription = Inscription::factory()->create();
-        Bulletin::factory()->count(3)->create([
-            'inscription_id' => $inscription->id,
-            'est_publie'     => false,
-        ]);
-
-        $this->getJson("/api/inscriptions/{$inscription->id}/bulletins")
-            ->assertOk()
-            ->assertJsonCount(0, 'data');
-    }
-
-    public function testDirectionCanSeeAllBulletinsIncludingUnpublished(): void {
-        $direction = Utilisateur::factory()->create(['role_code' => Role::DIRECTION]);
-        Sanctum::actingAs($direction);
-
-        $inscription = Inscription::factory()->create();
-        Bulletin::factory()->count(1)->create(['inscription_id' => $inscription->id, 'est_publie' => true]);
-        Bulletin::factory()->count(2)->create(['inscription_id' => $inscription->id, 'est_publie' => false]);
-
-        $this->getJson("/api/inscriptions/{$inscription->id}/bulletins")
-            ->assertOk()
-            ->assertJsonCount(3, 'data');
-    }
-
-    public function testUnauthenticatedUserCannotAccessBulletins(): void {
-        $inscription = Inscription::factory()->create();
-
-        $this->getJson("/api/inscriptions/{$inscription->id}/bulletins")
-            ->assertUnauthorized();
-    }
-
-    public function testDirectionCanPublishABulletin(): void {
-        $direction = Utilisateur::factory()->create(['role_code' => Role::DIRECTION]);
-        Sanctum::actingAs($direction);
-
-        $inscription = Inscription::factory()->create();
-        $bulletin    = Bulletin::factory()->create([
-            'inscription_id' => $inscription->id,
-            'est_publie'     => false,
-        ]);
-
-        $this->patchJson("/api/bulletins/{$bulletin->id}/publier")
-            ->assertOk()
-            ->assertJsonPath('data.est_publie', true);
 
         $this->assertDatabaseHas('bulletins', [
-            'id'         => $bulletin->id,
-            'est_publie' => true,
+            'id'          => $bulletin->id,
+            'rang_classe' => 3,
+            'est_publie'  => false,
         ]);
     }
 
-    public function testParentCannotPublishABulletin(): void {
-        $parent = Utilisateur::factory()->create(['role_code' => Role::PARENT]);
-        Sanctum::actingAs($parent);
-
+    public function testBulletinDefaultsToUnpublished(): void {
         $inscription = Inscription::factory()->create();
-        $bulletin    = Bulletin::factory()->create([
-            'inscription_id' => $inscription->id,
-            'est_publie'     => false,
+        $periode = Periode::factory()->create();
+
+        $bulletin = Bulletin::create([
+            'inscription_id'        => $inscription->id,
+            'periode_id'            => $periode->id,
+            'rang_classe'           => 1,
+            'moyenne_generale'      => 17.50,
+            'appreciation_generale' => 'Excellent.',
+            'est_publie'            => false,
         ]);
 
-        $this->patchJson("/api/bulletins/{$bulletin->id}/publier")
-            ->assertForbidden();
+        $this->assertFalse($bulletin->est_publie);
+        $this->assertNull($bulletin->publie_at);
+    }
+
+    public function testBulletinCanBePublished(): void {
+        $inscription = Inscription::factory()->create();
+        $periode = Periode::factory()->create();
+
+        $bulletin = Bulletin::create([
+            'inscription_id'        => $inscription->id,
+            'periode_id'            => $periode->id,
+            'rang_classe'           => 2,
+            'moyenne_generale'      => 12.00,
+            'appreciation_generale' => 'Peut mieux faire.',
+            'est_publie'            => false,
+        ]);
+
+        $bulletin->update([
+            'est_publie' => true,
+            'publie_at'  => now(),
+        ]);
+
+        $this->assertTrue($bulletin->fresh()->est_publie);
+        $this->assertNotNull($bulletin->fresh()->publie_at);
+    }
+
+    public function testBulletinBelongsToInscription(): void {
+        $inscription = Inscription::factory()->create();
+        $periode = Periode::factory()->create();
+
+        $bulletin = Bulletin::create([
+            'inscription_id'        => $inscription->id,
+            'periode_id'            => $periode->id,
+            'rang_classe'           => 5,
+            'moyenne_generale'      => 10.00,
+            'appreciation_generale' => 'Passable.',
+            'est_publie'            => false,
+        ]);
+
+        $this->assertInstanceOf(Inscription::class, $bulletin->inscription);
+        $this->assertEquals($inscription->id, $bulletin->inscription->id);
+    }
+
+    public function testBulletinBelongsToPeriode(): void {
+        $inscription = Inscription::factory()->create();
+        $periode = Periode::factory()->create();
+
+        $bulletin = Bulletin::create([
+            'inscription_id'        => $inscription->id,
+            'periode_id'            => $periode->id,
+            'rang_classe'           => 1,
+            'moyenne_generale'      => 19.00,
+            'appreciation_generale' => 'Exceptionnel.',
+            'est_publie'            => false,
+        ]);
+
+        $this->assertInstanceOf(Periode::class, $bulletin->periode);
+        $this->assertEquals($periode->id, $bulletin->periode->id);
+    }
+
+    public function testMultipleBulletinsCanExistPerInscription(): void {
+        $inscription = Inscription::factory()->create();
+        $periodes = Periode::factory()->count(3)->create();
+
+        foreach ($periodes as $index => $periode) {
+            Bulletin::create([
+                'inscription_id'        => $inscription->id,
+                'periode_id'            => $periode->id,
+                'rang_classe'           => $index + 1,
+                'moyenne_generale'      => 12.00 + $index,
+                'appreciation_generale' => 'Bien.',
+                'est_publie'            => false,
+            ]);
+        }
+
+        $this->assertCount(3, Bulletin::where('inscription_id', $inscription->id)->get());
     }
 }

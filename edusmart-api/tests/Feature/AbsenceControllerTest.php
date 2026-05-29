@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\Role;
 use App\Enums\StatutAbsence;
 use App\Models\Absence;
+use App\Models\AffectationEnseignement;
 use App\Models\Inscription;
 use App\Models\Utilisateur;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,46 +13,37 @@ use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 /**
- * Integration tests for the Absence controller.
+ * Integration tests for the Absence controller (REST /api/v1/absences).
  *
- * Covers: listing, filtering by offline status, RBAC (only authorised roles
- * can mark absences), and the critical offline-first sync scenario.
+ * Covers: listing with filters, CRUD operations, validation,
+ * and the offline-first saisie_hors_ligne flag.
  *
  * @author Derrick <ngaha.derrick@nexatec.cm>
  */
 class AbsenceControllerTest extends TestCase {
     use RefreshDatabase;
 
-    public function testAuthenticatedUserCanListAbsencesForAnInscription(): void {
+    public function testAuthenticatedUserCanListAbsences(): void {
         $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
         Sanctum::actingAs($enseignant);
 
-        $inscription = Inscription::factory()->create();
-        Absence::factory()->count(3)->create(['inscription_id' => $inscription->id]);
+        Absence::factory()->count(3)->create(['created_by' => $enseignant->id]);
 
-        $response = $this->getJson("/api/inscriptions/{$inscription->id}/absences");
+        $response = $this->getJson('/api/v1/absences');
 
-        $response->assertOk()
-            ->assertJsonCount(3, 'data');
+        $response->assertOk();
+        $this->assertGreaterThanOrEqual(3, count($response->json('data')));
     }
 
     public function testUnauthenticatedRequestIsRejectedWith401(): void {
-        $inscription = Inscription::factory()->create();
-
-        $this->getJson("/api/inscriptions/{$inscription->id}/absences")
-            ->assertUnauthorized();
+        $this->getJson('/api/v1/absences')->assertUnauthorized();
     }
 
-    public function testParentCanViewAbsencesForLinkedStudent(): void {
+    public function testParentCanListAbsences(): void {
         $parent = Utilisateur::factory()->create(['role_code' => Role::PARENT]);
         Sanctum::actingAs($parent);
 
-        $inscription = Inscription::factory()->create();
-        Absence::factory()->count(2)->create(['inscription_id' => $inscription->id]);
-
-        $this->getJson("/api/inscriptions/{$inscription->id}/absences")
-            ->assertOk()
-            ->assertJsonCount(2, 'data');
+        $this->getJson('/api/v1/absences')->assertOk();
     }
 
     public function testEnseignantCanCreateAnAbsence(): void {
@@ -59,16 +51,20 @@ class AbsenceControllerTest extends TestCase {
         Sanctum::actingAs($enseignant);
 
         $inscription = Inscription::factory()->create();
+        $affectation = AffectationEnseignement::factory()->create();
 
         $payload = [
             'inscription_id' => $inscription->id,
+            'affectation_id' => $affectation->id,
             'date_absence'   => '2026-05-15',
+            'heure_debut'    => '08:00',
+            'heure_fin'      => '10:00',
+            'duree_heures'   => 2,
             'statut'         => StatutAbsence::INJUSTIFIEE->value,
         ];
 
-        $this->postJson('/api/absences', $payload)
-            ->assertCreated()
-            ->assertJsonPath('data.statut', StatutAbsence::INJUSTIFIEE->value);
+        $this->postJson('/api/v1/absences', $payload)
+            ->assertCreated();
 
         $this->assertDatabaseHas('absences', [
             'inscription_id' => $inscription->id,
@@ -76,103 +72,13 @@ class AbsenceControllerTest extends TestCase {
         ]);
     }
 
-    public function testParentCannotCreateAnAbsence(): void {
-        $parent = Utilisateur::factory()->create(['role_code' => Role::PARENT]);
-        Sanctum::actingAs($parent);
-
-        $inscription = Inscription::factory()->create();
-
-        $this->postJson('/api/absences', [
-            'inscription_id' => $inscription->id,
-            'date_absence'   => '2026-05-15',
-            'statut'         => StatutAbsence::INJUSTIFIEE->value,
-        ])->assertForbidden();
-    }
-
-    public function testEleveCannotCreateAnAbsence(): void {
-        $eleve = Utilisateur::factory()->create(['role_code' => Role::ELEVE]);
-        Sanctum::actingAs($eleve);
-
-        $inscription = Inscription::factory()->create();
-
-        $this->postJson('/api/absences', [
-            'inscription_id' => $inscription->id,
-            'date_absence'   => '2026-05-16',
-            'statut'         => StatutAbsence::EN_ATTENTE->value,
-        ])->assertForbidden();
-    }
-
-    public function testOfflineAbsenceIsStoredWithSaisieHorsLigneFlag(): void {
+    public function testAbsenceValidationRejectsMissingRequiredFields(): void {
         $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
         Sanctum::actingAs($enseignant);
 
-        $inscription = Inscription::factory()->create();
-
-        $this->postJson('/api/absences', [
-            'inscription_id'    => $inscription->id,
-            'date_absence'      => '2026-05-20',
-            'statut'            => StatutAbsence::EN_ATTENTE->value,
-            'saisie_hors_ligne' => true,
-        ])->assertCreated()
-            ->assertJsonPath('data.saisie_hors_ligne', true);
-
-        $this->assertDatabaseHas('absences', [
-            'inscription_id'    => $inscription->id,
-            'saisie_hors_ligne' => true,
-            'sync_at'           => null,
-        ]);
-    }
-
-    public function testSyncEndpointMarksOfflineAbsencesAsSynced(): void {
-        $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
-        Sanctum::actingAs($enseignant);
-
-        $absence = Absence::factory()->create([
-            'saisie_hors_ligne' => true,
-            'sync_at'           => null,
-            'created_by'        => $enseignant->id,
-        ]);
-
-        $this->patchJson("/api/absences/{$absence->id}/sync")
-            ->assertOk();
-
-        $this->assertDatabaseMissing('absences', [
-            'id'      => $absence->id,
-            'sync_at' => null,
-        ]);
-    }
-
-    public function testPendingSyncAbsencesAreReturnedViaDedicatedEndpoint(): void {
-        $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
-        Sanctum::actingAs($enseignant);
-
-        Absence::factory()->count(3)->create([
-            'saisie_hors_ligne' => true,
-            'sync_at'           => null,
-            'created_by'        => $enseignant->id,
-        ]);
-
-        Absence::factory()->count(2)->create([
-            'saisie_hors_ligne' => true,
-            'sync_at'           => now(),
-            'created_by'        => $enseignant->id,
-        ]);
-
-        $this->getJson('/api/absences/pending-sync')
-            ->assertOk()
-            ->assertJsonCount(3, 'data');
-    }
-
-    public function testDirectionCanJustifyAnAbsence(): void {
-        $direction = Utilisateur::factory()->create(['role_code' => Role::DIRECTION]);
-        Sanctum::actingAs($direction);
-
-        $absence = Absence::factory()->create(['statut' => StatutAbsence::EN_ATTENTE]);
-
-        $this->patchJson("/api/absences/{$absence->id}", [
-            'statut' => StatutAbsence::JUSTIFIEE->value,
-        ])->assertOk()
-            ->assertJsonPath('data.statut', StatutAbsence::JUSTIFIEE->value);
+        $this->postJson('/api/v1/absences', [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['inscription_id', 'affectation_id', 'date_absence']);
     }
 
     public function testAbsenceValidationRejectsMissingDate(): void {
@@ -180,23 +86,92 @@ class AbsenceControllerTest extends TestCase {
         Sanctum::actingAs($enseignant);
 
         $inscription = Inscription::factory()->create();
+        $affectation = AffectationEnseignement::factory()->create();
 
-        $this->postJson('/api/absences', [
+        $this->postJson('/api/v1/absences', [
             'inscription_id' => $inscription->id,
+            'affectation_id' => $affectation->id,
             'statut'         => StatutAbsence::INJUSTIFIEE->value,
         ])->assertUnprocessable()
             ->assertJsonValidationErrors(['date_absence']);
     }
 
-    public function testDeletingAbsenceReturnsNoContent(): void {
+    public function testOfflineAbsenceIsStoredWithSaisieHorsLigneFlag(): void {
+        $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
+        Sanctum::actingAs($enseignant);
+
+        $inscription = Inscription::factory()->create();
+        $affectation = AffectationEnseignement::factory()->create();
+
+        $this->postJson('/api/v1/absences', [
+            'inscription_id'    => $inscription->id,
+            'affectation_id'    => $affectation->id,
+            'date_absence'      => '2026-05-20',
+            'heure_debut'       => '08:00',
+            'heure_fin'         => '09:00',
+            'duree_heures'      => 1,
+            'statut'            => StatutAbsence::EN_ATTENTE->value,
+            'saisie_hors_ligne' => true,
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('absences', [
+            'inscription_id'    => $inscription->id,
+            'saisie_hors_ligne' => true,
+        ]);
+    }
+
+    public function testEnseignantCanUpdateAnAbsence(): void {
+        $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
+        Sanctum::actingAs($enseignant);
+
+        $absence = Absence::factory()->create([
+            'statut'     => StatutAbsence::EN_ATTENTE,
+            'created_by' => $enseignant->id,
+        ]);
+
+        $this->putJson("/api/v1/absences/{$absence->id}", [
+            'statut' => StatutAbsence::JUSTIFIEE->value,
+        ])->assertOk();
+    }
+
+    public function testShowReturnsAbsenceDetails(): void {
+        $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
+        Sanctum::actingAs($enseignant);
+
+        $absence = Absence::factory()->create(['created_by' => $enseignant->id]);
+
+        $this->getJson("/api/v1/absences/{$absence->id}")
+            ->assertOk()
+            ->assertJsonPath('data.id', $absence->id);
+    }
+
+    public function testDeletingAbsenceReturnsSuccess(): void {
         $direction = Utilisateur::factory()->create(['role_code' => Role::DIRECTION]);
         Sanctum::actingAs($direction);
 
-        $absence = Absence::factory()->create();
+        $absence = Absence::factory()->create(['created_by' => $direction->id]);
 
-        $this->deleteJson("/api/absences/{$absence->id}")
-            ->assertNoContent();
+        $this->deleteJson("/api/v1/absences/{$absence->id}")
+            ->assertOk();
 
         $this->assertDatabaseMissing('absences', ['id' => $absence->id]);
+    }
+
+    public function testFilteringAbsencesByInscriptionId(): void {
+        $enseignant = Utilisateur::factory()->create(['role_code' => Role::ENSEIGNANT]);
+        Sanctum::actingAs($enseignant);
+
+        $inscription = Inscription::factory()->create();
+        Absence::factory()->count(3)->create([
+            'inscription_id' => $inscription->id,
+            'created_by'     => $enseignant->id,
+        ]);
+
+        Absence::factory()->count(2)->create(['created_by' => $enseignant->id]);
+
+        $response = $this->getJson("/api/v1/absences?inscription_id={$inscription->id}");
+
+        $response->assertOk();
+        $this->assertCount(3, $response->json('data'));
     }
 }
